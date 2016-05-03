@@ -15,9 +15,7 @@ using namespace std;
 int main()
 {
   Base *command_pointer = new CompositeCommand;
-  int status = 0;
   int e = 0;
-  char connector;
   bool ex_result;
   char **analyzed = new char*[256];
   char **analyzed2 = new char*[256];
