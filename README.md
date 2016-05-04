@@ -19,7 +19,7 @@ To run a single command:
 
 To run multiple commands:
 > Execute commands without checking for successful/unsuccessful executions:
->> echo hello; echo something; echo blah; mkdir foldername
+>> echo hello; echo something; echo random; mkdir foldername
 
 > Execute a command only if the previous command executed successfully:
 >> mkdir test && echo hello
