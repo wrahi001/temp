@@ -42,3 +42,8 @@ All ";", "&", and "|"'s are considered to be connectors. Using a connector chara
 will not execute as they should.
 
 Commands that terminate abnormally may incorrectly be considered executed successfully to the program.
+
+Bugs
+----
+
+The connectors proved to produced the highest amount of bugs.  The ; connector outputed the most complier and run-time erros.  This was by far the most difficult bug for us to resolve.  This was due to the reason that we did not have a full understanding on how two dimensional arrays worked.  
