@@ -24,7 +24,7 @@ To run multiple commands:
 > Execute a command only if the previous command executed successfully:
 >> mkdir test && echo hello
 
-> Execute a command only is the previous command executed unsuccessfully:
+> Execute a command only if the previous command did not executed unsuccessfully:
 >> mkdir test || echo goodbye
 
 > Execute a mixed command:
