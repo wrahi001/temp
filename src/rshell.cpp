@@ -30,7 +30,7 @@ int main()
     {
 	    cout << "Now exiting the rshell" << endl;
 	    exit(1);
-    }
+    } 
     command_pointer->analyze(analyzed);
 /*********************/    
     for (int i = 0; analyzed[i] != NULL; i++)
