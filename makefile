@@ -3,3 +3,4 @@
 all:
 	mkdir bin
 	cd src; make
+	mv src/rshell bin
