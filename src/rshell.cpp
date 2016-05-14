@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <pwd.h>
+#include <stdio.h>
 #include "rshell.h"
 using namespace std;
 
@@ -18,13 +20,20 @@ int main()
   int e = 0;
   bool ex_result;
   char **analyzed = new char*[256];
-  char **analyzed2 = new char*[256];
-  bool skip = false;
+  char **analyzed2 = new char*[256]; 
 
-  cout << "Welcome to the rshell" << endl;					
+  bool skip = false;
+  
+  cout << "Welcome to the rshell" << endl;
+
+  char hostname[1024];
+  gethostname(hostname, 1024);
   while(true)
   {
-    cout << "rshell$ ";   
+    cout << getlogin() << "@";
+    cout << hostname;
+    cout << "$ ";
+
     command_pointer->get();
     if(command_pointer->check_if_exit() == "exit")
     {
