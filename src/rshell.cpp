@@ -22,8 +22,7 @@ int main()
   char **analyzed = new char*[256];
   char **analyzed2 = new char*[256]; 
 
-  bool skip = false;
-  
+  bool skip = false; 
   cout << "Welcome to the rshell" << endl;
 
   char hostname[1024];
@@ -45,6 +44,14 @@ int main()
     for (int i = 0; analyzed[i] != NULL; i++)
     {
 	for (int j = 0; analyzed[i][j] != '\0'; j++)
+	{
+		if(analyzed[i][j] == '(')
+		{
+			for (int m = 0; analyzed[i][m] != '\0'; m++)
+			{
+				analyzed[i][m] = analyzed[i][m+1];
+			}
+		}
 		if(analyzed[i][j] == ';' && j!=0)
 		{
 			analyzed[i][j] = '\0';
@@ -57,6 +64,11 @@ int main()
                         e = 0;
 			skip = true;
 		}
+		if(analyzed[i][j] == ')')
+		{
+			analyzed[i][j] = '\0';
+		}
+	}
 	
       if (*analyzed[i] == ';')
       {
