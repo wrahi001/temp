@@ -21,7 +21,7 @@ int main()
   bool ex_result;
   char **analyzed = new char*[256];
   char **analyzed2 = new char*[256]; 
-
+  bool previous = true;
   bool skip = false; 
   cout << "Welcome to the rshell" << endl;
 
@@ -79,25 +79,32 @@ int main()
       }
       else if (*analyzed[i] == '&')
       {
-        ex_result = command_pointer->execute(analyzed2);
+	if (previous)
+		ex_result = command_pointer->execute(analyzed2);
         delete [] analyzed2;
         analyzed2 = new char*[256];
         e = 0;
         if (!ex_result)
 		{
-			break;
+			previous = false;
 		}
+	else
+		previous = true;
       }
       else if (*analyzed[i] == '|' )
       {
-        ex_result = command_pointer->execute(analyzed2);
+	if (previous)
+		ex_result = command_pointer->execute(analyzed2);
         delete [] analyzed2;
         analyzed2 = new char*[256];
         e = 0;
+	
         if (ex_result)
 		{
-			break;
+			previous = false;
 		}
+	else
+		previous = true;
       }
       else if (*analyzed[i] == '#' )
       {
@@ -115,12 +122,14 @@ int main()
 		skip = false;
       }
     }
-    if (e > 0)
+    if(e > 0)
 	{
-		command_pointer->execute(analyzed2);
+		if (previous)
+			command_pointer->execute(analyzed2);
 	      	delete [] analyzed2;
 		analyzed2 = new char*[256];
-	        e = 0;	
+	        e = 0;
+		previous = true;
 	}
 /*********************************/	
   }
