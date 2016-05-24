@@ -18,6 +18,7 @@ int main()
 {
   Base *command_pointer = new CompositeCommand;
   int e = 0;
+  bool par = false;
   bool ex_result;
   char **analyzed = new char*[256];
   char **analyzed2 = new char*[256]; 
@@ -67,6 +68,7 @@ int main()
 		if(analyzed[i][j] == ')')
 		{
 			analyzed[i][j] = '\0';
+			par = true;
 		}
 	}
 	
@@ -84,6 +86,8 @@ int main()
         delete [] analyzed2;
         analyzed2 = new char*[256];
         e = 0;
+	if (!ex_result && par)
+		break;
         if (!ex_result)
 		{
 			previous = false;
@@ -98,7 +102,9 @@ int main()
         delete [] analyzed2;
         analyzed2 = new char*[256];
         e = 0;
-	
+		
+	if (ex_result && par)
+		break;
         if (ex_result)
 		{
 			previous = false;
