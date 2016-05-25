@@ -114,7 +114,6 @@ int main()
 {
 	Base *command_pointer = new CompositeCommand;
 	int e = 0;
-	bool par = false;
 	bool ex_result;
 	char **analyzed = new char*[256];
 	char **analyzed2 = new char*[256];
@@ -133,7 +132,6 @@ int main()
 		command_pointer->get();
 		if (command_pointer->check_if_exit() == "exit")
 		{
-			cout << "Now exiting the rshell" << endl;
 			exit(1);
 		}
 		command_pointer->analyze(analyzed);
@@ -164,8 +162,9 @@ int main()
 				if (analyzed[i][j] == ')')
 				{
 					analyzed[i][j] = '\0';
-					par = true;
 				}
+				if (analyzed[i][j] == 'e' && analyzed[i][j+1] == 'x' && analyzed[i][j+2] == 'i' && analyzed[i][j+3] == 't')
+					exit(1);
 			}
 
 			if (*analyzed[i] == ';')
@@ -198,14 +197,15 @@ int main()
 				delete [] analyzed2;
 				analyzed2 = new char*[256];
 				e = 0;
-				if (!ex_result && par)
-					break;
+				
 				if (!ex_result)
 				{
 					previous = false;
 				}
 				else
+				{
 					previous = true;
+				}
 			}
 			else if (*analyzed[i] == '|')
 			{
@@ -225,12 +225,8 @@ int main()
 				analyzed2 = new char*[256];
 				e = 0;
 
-				if (ex_result && par)
-					break;
 				if (ex_result)
-				{
 					previous = false;
-				}
 				else
 					previous = true;
 			}
