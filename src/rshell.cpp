@@ -124,12 +124,12 @@ int main()
 	int curCmdPos = 0;
 	cout << "Welcome to the rshell" << endl;
 
-	// char hostname[1024];
-	// gethostname(hostname, 1024);
+	char hostname[1024];
+	gethostname(hostname, 1024);
 	while(true)
 	{
-		// cout << getlogin() << "@";
-		// cout << hostname;
+		cout << getlogin() << "@";
+		cout << hostname;
 		cout << "$ ";
 
 		command_pointer->get();
