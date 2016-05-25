@@ -17,7 +17,7 @@ using namespace std;
 bool firstWordIs(char *word, string subWord)
 {
 	int i;
-	for (i = 0; i < subWord.size(); i++)
+	for (i = 0; i < (int)subWord.size(); i++)
 	{
 		if (word[i] != subWord[i])
 		return false;
@@ -55,7 +55,6 @@ string substr2(char *word, int pos)
 
 bool runTest(char *cmd, int cmdLen) {
 	struct stat sb;
-	bool statVal = false;
 	string testArg = "";
 	const char *c;
 
@@ -121,7 +120,6 @@ int main()
 	char **analyzed2 = new char*[256];
 	bool previous = true;
 	bool skip = false;
-	int curCmdPos = 0;
 	cout << "Welcome to the rshell" << endl;
 
 	char hostname[1024];
@@ -187,6 +185,7 @@ int main()
 			else if (*analyzed[i] == '&')
 			{
 				if (previous)
+				{
 					if (firstWordIs(*analyzed2, "test") || firstWordIs(*analyzed2, "["))
 					{
 						ex_result = runTest(*analyzed2, e + 1);
@@ -195,6 +194,7 @@ int main()
 					{
 						ex_result = command_pointer->execute(analyzed2);
 					}
+				}
 				delete [] analyzed2;
 				analyzed2 = new char*[256];
 				e = 0;
@@ -209,7 +209,9 @@ int main()
 			}
 			else if (*analyzed[i] == '|')
 			{
+					
 				if (previous)
+				{
 					if (firstWordIs(*analyzed2, "test") || firstWordIs(*analyzed2, "["))
 					{
 						ex_result = runTest(*analyzed2, e);
@@ -218,6 +220,7 @@ int main()
 					{
 						ex_result = command_pointer->execute(analyzed2);
 					}
+				}
 				delete [] analyzed2;
 				analyzed2 = new char*[256];
 				e = 0;
@@ -250,6 +253,7 @@ int main()
 		if (e > 0)
 		{
 			if (previous)
+			{
 				if (firstWordIs(*analyzed2, "test") || firstWordIs(*analyzed2, "["))
 				{
 					runTest(*analyzed2, e);
@@ -258,6 +262,7 @@ int main()
 				{
 					command_pointer->execute(analyzed2);
 				}
+			}
 			delete [] analyzed2;
 			analyzed2 = new char*[256];
 			e = 0;
