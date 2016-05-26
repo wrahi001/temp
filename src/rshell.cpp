@@ -53,7 +53,7 @@ string substr2(char *word, int pos)
 	return temp;
 }
 
-bool runTest(char *cmd, int cmdLen) {
+bool runTest(char *cmd) {
 	struct stat sb;
 	string testArg = "";
 	const char *c;
@@ -119,6 +119,7 @@ int main()
 	char **analyzed2 = new char*[256];
 	bool previous = true;
 	bool skip = false;
+	bool inPar = false;
 	cout << "Welcome to the rshell" << endl;
 
 	char hostname[1024];
@@ -146,6 +147,7 @@ int main()
 					{
 						analyzed[i][m] = analyzed[i][m + 1];
 					}
+					inPar = true;
 				}
 				if (analyzed[i][j] == ';' && j != 0)
 				{
@@ -162,6 +164,7 @@ int main()
 				if (analyzed[i][j] == ')')
 				{
 					analyzed[i][j] = '\0';
+					inPar = false;
 				}
 				if (analyzed[i][j] == 'e' && analyzed[i][j+1] == 'x' && analyzed[i][j+2] == 'i' && analyzed[i][j+3] == 't')
 					exit(1);
@@ -171,7 +174,7 @@ int main()
 			{
 				if (firstWordIs(*analyzed2, "test") || firstWordIs(*analyzed2, "["))
 				{
-					ex_result = runTest(*analyzed2, e + 1);
+					ex_result = runTest(*analyzed2);
 				}
 				else
 				{
@@ -187,7 +190,7 @@ int main()
 				{
 					if (firstWordIs(*analyzed2, "test") || firstWordIs(*analyzed2, "["))
 					{
-						ex_result = runTest(*analyzed2, e + 1);
+						ex_result = runTest(*analyzed2);
 					}
 					else
 					{
@@ -198,6 +201,9 @@ int main()
 				analyzed2 = new char*[256];
 				e = 0;
 				
+				if (inPar)
+					continue;
+
 				if (!ex_result)
 				{
 					previous = false;
@@ -208,13 +214,12 @@ int main()
 				}
 			}
 			else if (*analyzed[i] == '|')
-			{
-					
+			{					
 				if (previous)
 				{
 					if (firstWordIs(*analyzed2, "test") || firstWordIs(*analyzed2, "["))
 					{
-						ex_result = runTest(*analyzed2, e);
+						ex_result = runTest(*analyzed2);
 					}
 					else
 					{
@@ -224,6 +229,9 @@ int main()
 				delete [] analyzed2;
 				analyzed2 = new char*[256];
 				e = 0;
+
+				if (inPar)
+					continue;
 
 				if (ex_result)
 					previous = false;
@@ -252,7 +260,7 @@ int main()
 			{
 				if (firstWordIs(*analyzed2, "test") || firstWordIs(*analyzed2, "["))
 				{
-					runTest(*analyzed2, e);
+					runTest(*analyzed2);
 				}
 				else
 				{
