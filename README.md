@@ -1,4 +1,4 @@
-Assignment 2: Writing a Basic Command Shell
+Assignment 3: Writing a Basic Command Shell
 ===========================================
 
 Introduction
