@@ -32,7 +32,9 @@ rm test_exit.sh exit
 echo "This" ; echo "Will" && echo "Be" ; echo "The" ; echo "Last" &&
 \echo "Line"
 
-exit
+echo "Hmm.." && #exit
+echo "Is it?" || exit #A
+exit #just exit
 
 echo "Everything from here will be ignored!"
 ls
@@ -42,3 +44,7 @@ qweruwqi
 ls asd
 ls -alt
 huhuhuhu
+test -d /home
+test -e /home
+test -f /home
+test /home
