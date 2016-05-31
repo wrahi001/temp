@@ -27,3 +27,9 @@ echo ""
 [makefile ]
 [makefile]
 [makefile
+
+echo ""
+test /home && echo "true" || echo "false"
+test -e /home && echo "true" || echo "false"
+test -f /home && echo "true" || echo "false"
+test -d /home && echo "true" || echo "false"
