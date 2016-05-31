@@ -260,9 +260,6 @@ int main()
                 analyzed2 = new char*[256];
                 e = 0;
 
-
-
-
                 if (ex_result)
                     previous = false;
                 else if (inPar)
