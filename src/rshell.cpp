@@ -8,10 +8,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #include <boost/algorithm/string.hpp>
 
 using namespace std;
-// using namespace boost::algorithm;
+
 
 
 void die(const char*);
@@ -185,7 +184,7 @@ bool out_redirection2(char **ca, string output_file) {
   int filedes1;
 
   // save the stdin and stdout file descriptors
-  //filedes0 = dup(0);
+  
   filedes1 = dup(1);
 
   // open input and output files
