@@ -13,7 +13,7 @@
 using namespace std;
 // using namespace boost::algorithm;
 
-/* function prototypes */
+
 void die(const char*);
 
 // split the input line into an array
@@ -22,13 +22,12 @@ void parse(char *text, char **ca)
   while (*text != '\0')
   {    /* if not the end of line ....... */
     while (*text == ' ' || *text == '\t' || *text == '\n')
-    *text++ = '\0';  /* replace white spaces with 0    */
-    *ca++ = text;    /* save the argument position  */
+    *text++ = '\0';  
+    *ca++ = text;    
     while (*text != '\0' && *text != ' ' &&
     *text != '\t' && *text != '\n')
-    text++;       /* skip the argument until ...    */
-  }
-  *ca = '\0';        /* mark the end of argument list  */
+    text++;         }
+  *ca = '\0';        
 }
 
 // execute the command that's been split up into an array
@@ -38,22 +37,20 @@ bool execute(char **ca)
   int status;
 
   if (pid < 0)
-  {  /* fork a prc process     */
+  {  
     perror("fork failed");
     exit(1);
   }
   else if (pid == 0)
-  {    /* for the prc process:      */
+  {    
     if (execvp(*ca, ca) < 0)
-    {  /* execute the command  */
-      perror("execvp failed");
+    {        perror("execvp failed");
       exit(1);
     }
   }
   else
-  {                /* for the parent:   */
-    while (waitpid(pid, &status, 0) != pid)    /* wait for completion  */
-    ;
+  {                
+    while (waitpid(pid, &status, 0) != pid)        ;
     if (WIFEXITED(status))
     {
       if (WEXITSTATUS(status) != 0)
@@ -91,22 +88,20 @@ bool execute2(char **ca1, char **ca2) {
     if(dup(pipe_d[1]) == -1)
     die("dup()");
 
-    /* now stdout and pipe_d[1] are equivalent (dup returns lowest free descriptor) */
-
+    
     if(!execute(ca1))
     die("execlp()");
 
     _exit(EXIT_SUCCESS);
   } else {
-    /* parent process */
+    
 
-    close(0);       /* close stdin */
+    close(0);       
 
     if(dup(pipe_d[0]) == -1)
     die("dup()");
 
-    /* now stdin and pipe_d[0] are equivalent (dup returns lowest free descriptor) */
-
+    
     if(!execute(ca2))
     die("execlp()");
 
@@ -190,7 +185,7 @@ bool out_redirection2(char **ca, string output_file) {
   int filedes1;
 
   // save the stdin and stdout file descriptors
-  filedes0 = dup(0);
+  //filedes0 = dup(0);
   filedes1 = dup(1);
 
   // open input and output files
@@ -212,10 +207,6 @@ bool out_redirection2(char **ca, string output_file) {
   return execution_result;
 }
 
-// run a test command such as
-// test -e test.txt
-// or
-// [ -e test.txt ]
 bool exe_test(string command)
 {
   struct stat statb;
