@@ -17,34 +17,34 @@ using namespace std;
 void die(const char*);
 
 // split the input line into an array
-void parse(char *line, char **argv)
+void parse(char *text, char **ca)
 {
-  while (*line != '\0')
+  while (*text != '\0')
   {    /* if not the end of line ....... */
-    while (*line == ' ' || *line == '\t' || *line == '\n')
-    *line++ = '\0';  /* replace white spaces with 0    */
-    *argv++ = line;    /* save the argument position  */
-    while (*line != '\0' && *line != ' ' &&
-    *line != '\t' && *line != '\n')
-    line++;       /* skip the argument until ...    */
+    while (*text == ' ' || *text == '\t' || *text == '\n')
+    *text++ = '\0';  /* replace white spaces with 0    */
+    *ca++ = text;    /* save the argument position  */
+    while (*text != '\0' && *text != ' ' &&
+    *text != '\t' && *text != '\n')
+    text++;       /* skip the argument until ...    */
   }
-  *argv = '\0';        /* mark the end of argument list  */
+  *ca = '\0';        /* mark the end of argument list  */
 }
 
 // execute the command that's been split up into an array
-bool execute(char **argv)
+bool execute(char **ca)
 {
   pid_t pid = fork();
   int status;
 
   if (pid < 0)
-  {  /* fork a child process     */
+  {  /* fork a prc process     */
     perror("fork failed");
     exit(1);
   }
   else if (pid == 0)
-  {    /* for the child process:      */
-    if (execvp(*argv, argv) < 0)
+  {    /* for the prc process:      */
+    if (execvp(*ca, ca) < 0)
     {  /* execute the command  */
       perror("execvp failed");
       exit(1);
@@ -66,34 +66,34 @@ bool execute(char **argv)
 }
 
 // for piping two commands
-bool execute2(char **argv1, char **argv2) {
-  int pdes[2];
-  pid_t child;
-  int fd0;
-  int fd1;
+bool execute2(char **ca1, char **ca2) {
+  int pipe_d[2];
+  pid_t prc;
+  int filedes0;
+  int filedes1;
 
   // save the stdin and stdout file descriptors
-  fd0 = dup(0);
-  fd1 = dup(1);
+  filedes0 = dup(0);
+  filedes1 = dup(1);
 
-  if(pipe(pdes) == -1)
+  if(pipe(pipe_d) == -1)
   die("pipe()");
 
-  child = fork();
-  if(child == (pid_t)(-1))
+  prc = fork();
+  if(prc == (pid_t)(-1))
   die("fork()"); /* fork failed */
 
-  if(child == (pid_t)0) {
-    /* child process */
+  if(prc == (pid_t)0) {
+    /* prc process */
 
     close(1);       /* close stdout */
 
-    if(dup(pdes[1]) == -1)
+    if(dup(pipe_d[1]) == -1)
     die("dup()");
 
-    /* now stdout and pdes[1] are equivalent (dup returns lowest free descriptor) */
+    /* now stdout and pipe_d[1] are equivalent (dup returns lowest free descriptor) */
 
-    if(!execute(argv1))
+    if(!execute(ca1))
     die("execlp()");
 
     _exit(EXIT_SUCCESS);
@@ -102,22 +102,22 @@ bool execute2(char **argv1, char **argv2) {
 
     close(0);       /* close stdin */
 
-    if(dup(pdes[0]) == -1)
+    if(dup(pipe_d[0]) == -1)
     die("dup()");
 
-    /* now stdin and pdes[0] are equivalent (dup returns lowest free descriptor) */
+    /* now stdin and pipe_d[0] are equivalent (dup returns lowest free descriptor) */
 
-    if(!execute(argv2))
+    if(!execute(ca2))
     die("execlp()");
 
     // exit(EXIT_SUCCESS);
   }
 
   // restore the stdin and stdout file descriptors
-  dup2(fd0, 0);
-  dup2(fd1, 1);
-  close(fd0);
-  close(fd1);
+  dup2(filedes0, 0);
+  dup2(filedes1, 1);
+  close(filedes0);
+  close(filedes1);
 
   return true;
 }
@@ -128,44 +128,44 @@ void die(const char *msg) {
 }
 
 // for an input redirector
-bool inRedir(char **argv, string inFile) {
-  int in;
-  bool execRes;
-  int fd0;
+bool input_redirection(char **ca, string inputfile) {
+  int input;
+  bool execution_result;
+  int filedes0;
 
   // save the stdin file descriptor
-  fd0 = dup(0);
+  filedes0 = dup(0);
 
   // open input file
-  in = open(inFile.c_str(), O_RDONLY);
+  input = open(inputfile.c_str(), O_RDONLY);
 
   // replace standard input with input file
-  dup2(in, 0);
+  dup2(input, 0);
 
   // close unused file descriptors
-  close(in);
+  close(input);
 
   // execute
-  execRes = execute(argv);
+  execution_result = execute(ca);
 
   // restore the stdin file descriptor
-  dup2(fd0, 0);
-  close(fd0);
+  dup2(filedes0, 0);
+  close(filedes0);
 
-  return execRes;
+  return execution_result;
 }
 
 // for an output redirector
-bool outRedir(char **argv, string outFile) {
+bool out_redirection(char **ca, string output_file) {
   int out;
-  bool execRes;
-  int fd1;
+  bool execution_result;
+  int filedes1;
 
   // save the stdin and stdout file descriptors
-  fd1 = dup(1);
+  filedes1 = dup(1);
 
   // open output file
-  out = open(outFile.c_str(), O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
+  out = open(output_file.c_str(), O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
 
   // replace standard output with output file
   dup2(out, 1);
@@ -174,27 +174,27 @@ bool outRedir(char **argv, string outFile) {
   close(out);
 
   // execute
-  execRes = execute(argv);
+  execution_result = execute(ca);
 
   // restore the stdout file descriptor
-  dup2(fd1, 1);
-  close(fd1);
+  dup2(filedes1, 1);
+  close(filedes1);
 
-  return execRes;
+  return execution_result;
 }
 
 // for an appending output redirector
-bool outRedir2(char **argv, string outFile) {
+bool out_redirection2(char **ca, string output_file) {
   int out;
-  bool execRes;
-  int fd1;
+  bool execution_result;
+  int filedes1;
 
   // save the stdin and stdout file descriptors
-  fd0 = dup(0);
-  fd1 = dup(1);
+  filedes0 = dup(0);
+  filedes1 = dup(1);
 
   // open input and output files
-  out = open(outFile.c_str(), O_WRONLY | O_APPEND, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
+  out = open(output_file.c_str(), O_WRONLY | O_APPEND, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
 
   // replace standard output with output file
   dup2(out, 1);
@@ -203,58 +203,58 @@ bool outRedir2(char **argv, string outFile) {
   close(out);
 
   // execute
-  execRes = execute(argv);
+  execution_result = execute(ca);
 
   // restore the stdout file descriptor
-  dup2(fd1, 1);
-  close(fd1);
+  dup2(filedes1, 1);
+  close(filedes1);
 
-  return execRes;
+  return execution_result;
 }
 
 // run a test command such as
 // test -e test.txt
 // or
 // [ -e test.txt ]
-bool runTest(string cmd)
+bool exe_test(string command)
 {
-  struct stat sb;
-  string testArg = "";
-  const char *c;
+  struct stat statb;
+  string string_test = "";
+  const char *character;
 
-  if (cmd.substr(0, 5) == "test ")
+  if (command.substr(0, 5) == "test ")
   { // example: test -e test.txt
     // get the argument
-    testArg = cmd.substr(5, 3);
+    string_test = command.substr(5, 3);
 
     // strip "test " and the argument from the command to get just the file/directory name
-    if (testArg == "-e " || testArg == "-f " || testArg == "-d ")
+    if (string_test == "-e " || string_test == "-f " || string_test == "-d ")
     {
-      c = cmd.substr(5 + 3).c_str();
+      character = command.substr(5 + 3).c_str();
     }
     else
     {
-      c = cmd.substr(5).c_str();
+      character = command.substr(5).c_str();
     }
   }
   else
   { // example: [ -e test.txt ]
     // get the argument
-    testArg = cmd.substr(2, 3);
+    string_test = command.substr(2, 3);
 
     // strip "[ ", " ]", and the argument from the command to get just the file/directory name
-    if (testArg == "-e " || testArg == "-f " || testArg == "-d ")
+    if (string_test == "-e " || string_test == "-f " || string_test == "-d ")
     {
-      c = cmd.substr(2 + 3, cmd.length() - (2 + 3) - 2).c_str();
+      character = command.substr(2 + 3, command.length() - (2 + 3) - 2).c_str();
     }
     else
     {
-      c = cmd.substr(2, cmd.length() - 2).c_str();
+      character = command.substr(2, command.length() - 2).c_str();
     }
   }
 
   // display whether the file/directory exists
-  if (stat(c, &sb) == -1)
+  if (stat(character, &statb) == -1)
   {
     cout << "(False)" << endl;
     return false;
@@ -262,9 +262,9 @@ bool runTest(string cmd)
   else
   {
     // display whether the file/directory is a file
-    if (testArg == "-f ")
+    if (string_test == "-f ")
     {
-      if ((sb.st_mode & S_IFMT) != S_IFREG)
+      if ((statb.st_mode & S_IFMT) != S_IFREG)
       {
         cout << "(False)" << endl;
         return false;
@@ -276,9 +276,9 @@ bool runTest(string cmd)
       }
     }
     // display whether the file/directory is a directory
-    else if (testArg == "-d ")
+    else if (string_test == "-d ")
     {
-      if ((sb.st_mode & S_IFMT) != S_IFDIR)
+      if ((statb.st_mode & S_IFMT) != S_IFDIR)
       {
         cout << "(False)" << endl;
         return false;
@@ -311,21 +311,21 @@ void trim2(string &s)
 
 int main()
 {
-  string cmd = "";
-  string currCmd = ""; // stores a single command from the input line with potentially multiple commands
-  char *argv[64];
-  char *argv2[64];
-  bool execRes = true;
-  bool prevExecRes = true;
+  string command = "";
+  string currcommand = ""; // stores a single command from the input line with potentially multiple commands
+  char *ca[64];
+  char *ca2[64];
+  bool execution_result = true;
+  bool prevexecution_result = true;
   string prevConn = ";";
   bool doExit = false;
   bool skipPar = false;
   bool stopParSkip = false;
-  string prevCmd = "";
+  string prevcommand = "";
   bool prevPipe = false;
-  bool prevInRedir = false;
-  bool prevOutRedir = false;
-  bool prevOutRedir2 = false;
+  bool previnput_redirection = false;
+  bool prevout_redirection = false;
+  bool prevout_redirection2 = false;
 
   while (!doExit)
   {
@@ -334,104 +334,104 @@ int main()
     cout << "$ ";
 
     // read the input
-    getline(cin, cmd);
+    getline(cin, command);
 
     // reset things
-    currCmd = "";
-    execRes = true;
-    prevExecRes = true;
+    currcommand = "";
+    execution_result = true;
+    prevexecution_result = true;
     prevConn = ";";
     skipPar = false;
     stopParSkip = false;
-    prevCmd = "";
+    prevcommand = "";
     prevPipe = false;
-    prevInRedir = false;
-    prevOutRedir = false;
-    prevOutRedir2 = false;
+    previnput_redirection = false;
+    prevout_redirection = false;
+    prevout_redirection2 = false;
 
     // loop through the command line one character at a time
-    for (int i = 0; i < (int)cmd.length() + 1; i++)
+    for (int i = 0; i < (int)command.length() + 1; i++)
     {
 
       // check if we're in parenthesis
-      if (cmd[i] == '(')
+      if (command[i] == '(')
       {
         // if the previous result failed, start skipping everything inside the parenthesis
-        if ((prevConn == "&&" && !prevExecRes) || (prevConn == "||" && prevExecRes))
+        if ((prevConn == "&&" && !prevexecution_result) || (prevConn == "||" && prevexecution_result))
         {
           skipPar = true;
 
           // set the previous result for use after the parenthesis has been skipped
           if (prevConn == "&&")
           {
-            prevExecRes = prevExecRes && false;
+            prevexecution_result = prevexecution_result && false;
           }
           else if (prevConn == "||")
           {
-            prevExecRes = prevExecRes || false;
+            prevexecution_result = prevexecution_result || false;
           }
         }
         continue;
       }
-      else if (cmd[i] == ')')
+      else if (command[i] == ')')
       { // we've reached the end of a parenthesis.
         stopParSkip = true;
         continue;
       }
-      else if (cmd[i] == '|' && cmd[i + 1] != '|')
+      else if (command[i] == '|' && command[i + 1] != '|')
       { // A wild pipe appeared!
 
         // trim leading and trailing spaces
-        trim2(currCmd);
+        trim2(currcommand);
 
         prevPipe = true;
-        prevCmd = currCmd;
-        currCmd = "";
+        prevcommand = currcommand;
+        currcommand = "";
         continue;
       }
-      else if (cmd[i] == '<')
+      else if (command[i] == '<')
       { // A wild input redirector appeared!
 
         // trim leading and trailing spaces
-        trim2(currCmd);
+        trim2(currcommand);
 
-        prevInRedir = true;
-        prevCmd = currCmd;
-        currCmd = "";
+        previnput_redirection = true;
+        prevcommand = currcommand;
+        currcommand = "";
         continue;
       }
-      else if (cmd[i] == '>' && cmd[i + 1] == '>')
+      else if (command[i] == '>' && command[i + 1] == '>')
       { // A wild output redirector appeared!
 
         // trim leading and trailing spaces
-        trim2(currCmd);
+        trim2(currcommand);
 
-        prevOutRedir2 = true;
-        prevCmd = currCmd;
-        currCmd = "";
+        prevout_redirection2 = true;
+        prevcommand = currcommand;
+        currcommand = "";
         i++;
         continue;
       }
-      else if (cmd[i] == '>')
+      else if (command[i] == '>')
       { // A wild output redirector appeared!
 
         // trim leading and trailing spaces
-        trim2(currCmd);
+        trim2(currcommand);
 
-        prevOutRedir = true;
-        prevCmd = currCmd;
-        currCmd = "";
+        prevout_redirection = true;
+        prevcommand = currcommand;
+        currcommand = "";
         continue;
       }
 
       // Here comes a new delimiter!
-      if (cmd[i] == ';' || cmd[i] == '&' || cmd[i] == '|' || cmd[i] == '#' || i == (int)cmd.length())
+      if (command[i] == ';' || command[i] == '&' || command[i] == '|' || command[i] == '#' || i == (int)command.length())
       {
         // trim leading and trailing spaces
-        trim2(currCmd);
+        trim2(currcommand);
 
         // skip to the next iteration if the command is blank after being trimmed
-        if (currCmd == "")
+        if (currcommand == "")
         {
           continue;
         }
@@ -440,81 +440,81 @@ int main()
         if (!skipPar)
         {
           // execute the current command if the previous result was successful
-          if (prevConn == ";" || (prevConn == "&&" && prevExecRes) || (prevConn == "||" && !prevExecRes))
+          if (prevConn == ";" || (prevConn == "&&" && prevexecution_result) || (prevConn == "||" && !prevexecution_result))
           {
-            if (prevInRedir)
+            if (previnput_redirection)
             { // we've encountered a normal command
-              cout << "We're input redirecting! Previous command: " << prevCmd << ". currCmd: " << currCmd << endl;
-              char *currCmd2 = &prevCmd[0];
-              parse(currCmd2, argv);
+              cout << "We're input redirecting! Previous command: " << prevcommand << ". currcommand: " << currcommand << endl;
+              char *currcommand2 = &prevcommand[0];
+              parse(currcommand2, ca);
 
-              execRes = inRedir(argv, currCmd);
-              prevInRedir = false;
+              execution_result = input_redirection(ca, currcommand);
+              previnput_redirection = false;
             }
-            else if (prevOutRedir)
+            else if (prevout_redirection)
             { // we've encountered a normal command
-              cout << "We're output redirecting! Previous command: " << prevCmd << ". currCmd: " << currCmd << endl;
-              char *currCmd2 = &prevCmd[0];
-              parse(currCmd2, argv);
+              cout << "We're output redirecting! Previous command: " << prevcommand << ". currcommand: " << currcommand << endl;
+              char *currcommand2 = &prevcommand[0];
+              parse(currcommand2, ca);
 
-              execRes = outRedir(argv, currCmd);
-              prevOutRedir = false;
+              execution_result = out_redirection(ca, currcommand);
+              prevout_redirection = false;
             }
-            else if (prevOutRedir2)
+            else if (prevout_redirection2)
             { // we've encountered a normal command
-              cout << "We're output redirecting! Previous command: " << prevCmd << ". currCmd: " << currCmd << endl;
-              char *currCmd2 = &prevCmd[0];
-              parse(currCmd2, argv);
+              cout << "We're output redirecting! Previous command: " << prevcommand << ". currcommand: " << currcommand << endl;
+              char *currcommand2 = &prevcommand[0];
+              parse(currcommand2, ca);
 
-              execRes = outRedir2(argv, currCmd);
-              prevOutRedir2 = false;
+              execution_result = out_redirection2(ca, currcommand);
+              prevout_redirection2 = false;
             }
             else if (prevPipe)
             { // we've encountered a normal command
-              cout << "We're piping! Previous command: " << prevCmd << ". currCmd: " << currCmd << endl;
-              char *currCmd2 = &prevCmd[0];
-              char *currCmd3 = &currCmd[0];
-              parse(currCmd2, argv);
-              parse(currCmd3, argv2);
+              cout << "We're piping! Previous command: " << prevcommand << ". currcommand: " << currcommand << endl;
+              char *currcommand2 = &prevcommand[0];
+              char *currcommand3 = &currcommand[0];
+              parse(currcommand2, ca);
+              parse(currcommand3, ca2);
 
-              execRes = execute2(argv, argv2);
+              execution_result = execute2(ca, ca2);
               prevPipe = false;
             }
-            else if (currCmd.substr(0, 5) == "test " || currCmd.substr(0, 2) == "[ ")
+            else if (currcommand.substr(0, 5) == "test " || currcommand.substr(0, 2) == "[ ")
             { // we've encountered a test command
-              execRes = runTest(currCmd);
+              execution_result = exe_test(currcommand);
             }
-            else if (currCmd == "exit")
+            else if (currcommand == "exit")
             { // we've encountered an exit command
               doExit = true;
               break;
             }
             else
             { // we've encountered a normal command
-              char *currCmd2 = &currCmd[0];
-              parse(currCmd2, argv);
+              char *currcommand2 = &currcommand[0];
+              parse(currcommand2, ca);
 
-              execRes = execute(argv);
+              execution_result = execute(ca);
             }
           }
 
           if (prevConn == ";")
           { // for a ";" connector
-            prevExecRes = execRes;
+            prevexecution_result = execution_result;
           }
           else if (prevConn == "&&")
           { // for a "&&" connector
-            prevExecRes = prevExecRes && execRes;
+            prevexecution_result = prevexecution_result && execution_result;
           }
           else if (prevConn == "||")
           { // for a "||" connector
-            prevExecRes = prevExecRes || execRes;
+            prevexecution_result = prevexecution_result || execution_result;
           }
-          else if (cmd[i] == '#')
+          else if (command[i] == '#')
           { // for a comment "#"
             break;
           }
-          else if (i == (int)cmd.length())
+          else if (i == (int)command.length())
           { // we've reached the end of the command. execute whatever is remaining
             break;
           }
@@ -529,16 +529,16 @@ int main()
         }
 
         // update the previous connector
-        if (cmd[i] == ';' || cmd[i] == '&' || cmd[i] == '|')
+        if (command[i] == ';' || command[i] == '&' || command[i] == '|')
         {
-          prevConn = cmd[i];
+          prevConn = command[i];
         }
 
         // reset things
-        currCmd = "";
+        currcommand = "";
 
         // skip the second "&&" in the "&&" connector
-        if (cmd[i] == '&')
+        if (command[i] == '&')
         {
           i++;
         }
@@ -547,7 +547,7 @@ int main()
       else
       {
         // add the current character to the current command variable
-        currCmd += cmd[i];
+        currcommand += command[i];
       }
     }
   }
